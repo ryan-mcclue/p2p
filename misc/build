@@ -8,7 +8,6 @@ pop_dir() { command popd "$@" > /dev/null; }
 [[ "$1" != "app" && "$1" != "tests" ]] && error "Usage: ./build <app|tests>"
 
 BUILD_TYPE="$1"
-NAME="iot"
 
 BUILD_START_TIME=$(date +%s.%N)
 
@@ -110,11 +109,7 @@ print_end_time() {
   BUILD_END_TIME=$(date +%s.%N)
   BUILD_TIME=$( echo "scale=4; ($BUILD_END_TIME - $BUILD_START_TIME)" | bc -l )
     
-  if [[ "$BUILD_TYPE" == "app" ]]; then 
-    printf "Build Time: %.4fs\n" "$BUILD_TIME" 
-  else
-    printf "Build and Test Time: %.4fs\n" "$BUILD_TIME" 
-  fi
+  printf "Build Time: %.4fs\n" "$BUILD_TIME" 
 }
 # NOTE(Ryan): This will run even if build is interrupted
 # trap print_end_time EXIT
@@ -128,6 +123,14 @@ PARAM_LINKER=${param_linker:-"ld"}
 PARAM_MODE=${param_mode:-"debug"}
 PARAM_ARCH=${param_arch:-"x86_64"}
 PARAM_VERBOSE=${param_verbose:-"0"}
+
+if [[ "$BUILD_TYPE" == "app" ]]; then
+  NAME="iot"
+else
+  NAME="iot-tests"
+fi
+
+BINARY_NAME="$NAME-$PARAM_MODE"
 
 mkdir -p build run
 
@@ -171,9 +174,11 @@ if [[ "$PARAM_ARCH" == "x86_64" && "$PARAM_COMPILER" == "g++" && "$PARAM_LINKER"
   # NOTE(Ryan): To differentiate binary types of same version $(readelf -n)
   LINKER_FLAGS+=( "-Wl,--build-id" )
 
-  LINKER_FLAGS+=( "-lm" "-ldl" "-lraylib" )
+  LINKER_FLAGS+=( "-lm" "-ldl" )
 
-  BINARY_NAME="$NAME-$PARAM_MODE"
+  if [[ "$BUILD_TYPE" == "tests" ]]; then
+    LINKER_FLAGS+=( "-lcmocka" )
+  fi
 
   if [[ "$PARAM_MODE" == "debug" ]]; then
     COMPILER_FLAGS+=( "-DDEBUG_BUILD" )
@@ -212,12 +217,9 @@ if [[ "$PARAM_ARCH" == "x86_64" && "$PARAM_COMPILER" == "g++" && "$PARAM_LINKER"
     fi
 
     #g++ ${COMPILER_FLAGS[*]} code/app.cpp -shared -fPIC -o run/app.so ${LINKER_FLAGS[*]}
-
     print_end_time
-
     # NOTE(Ryan): Remove ascii colour escape sequences for Vim quickfix window
-    #time build/"$BINARY_NAME" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"
-    build/"$BINARY_NAME" '-decode' 'i-32e' | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"
+    build/"$BINARY_NAME" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"
   elif [[ "$PARAM_MODE" == "release" ]]; then
     COMPILER_FLAGS+=( "-DRELEASE_BUILD" )
     COMPILER_FLAGS+=( "-O3" )
