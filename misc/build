@@ -126,8 +126,10 @@ PARAM_VERBOSE=${param_verbose:-"0"}
 
 if [[ "$BUILD_TYPE" == "app" ]]; then
   NAME="iot"
+  BINARY_ARGS=("-decode" "i-12e")
 else
   NAME="iot-tests"
+  BINARY_ARGS=()
 fi
 
 BINARY_NAME="$NAME-$PARAM_MODE"
@@ -177,6 +179,7 @@ if [[ "$PARAM_ARCH" == "x86_64" && "$PARAM_COMPILER" == "g++" && "$PARAM_LINKER"
   LINKER_FLAGS+=( "-lm" "-ldl" )
 
   if [[ "$BUILD_TYPE" == "tests" ]]; then
+    COMPILER_FLAGS+=( "-DTEST_BUILD" )
     LINKER_FLAGS+=( "-lcmocka" )
   fi
 
@@ -219,7 +222,7 @@ if [[ "$PARAM_ARCH" == "x86_64" && "$PARAM_COMPILER" == "g++" && "$PARAM_LINKER"
     #g++ ${COMPILER_FLAGS[*]} code/app.cpp -shared -fPIC -o run/app.so ${LINKER_FLAGS[*]}
     print_end_time
     # NOTE(Ryan): Remove ascii colour escape sequences for Vim quickfix window
-    build/"$BINARY_NAME" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"
+    build/"$BINARY_NAME" ${BINARY_ARGS[@]} | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"
   elif [[ "$PARAM_MODE" == "release" ]]; then
     COMPILER_FLAGS+=( "-DRELEASE_BUILD" )
     COMPILER_FLAGS+=( "-O3" )
@@ -236,7 +239,7 @@ if [[ "$PARAM_ARCH" == "x86_64" && "$PARAM_COMPILER" == "g++" && "$PARAM_LINKER"
     print_end_time
 
     # NOTE(Ryan): Remove ascii colour escape sequences for Vim quickfix window
-    build/"$BINARY_NAME" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"
+    build/"$BINARY_NAME"  | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"
   else
     error "Build currently only supports debug and release modes"
   fi
