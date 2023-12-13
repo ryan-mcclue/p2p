@@ -126,6 +126,12 @@ str8_substring(String8 str, memory_index start, memory_index end)
 }
 
 INTERNAL String8
+str8_range_u64(String8 str, RangeU64 range)
+{
+  return str8_substring(str, range.min, range.max); 
+}
+
+INTERNAL String8
 str8_advance(String8 str, memory_index advance)
 {
   return str8_substring(str, advance, str.size);
