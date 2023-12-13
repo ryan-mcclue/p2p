@@ -671,6 +671,63 @@ u32_pack_4x8(Vec4F32 val)
 }
 
 IGNORE_WARNING_PEDANTIC()
+typedef union RangeU32 RangeU32;
+union RangeU32
+{
+  struct
+  {
+    u32 min, max;
+  };
+  u32 v[2];
+};
+
+INTERNAL RangeU32
+range_u32(u32 min, u32 max)
+{
+  RangeU32 result = {min, max};
+  if (result.max < result.min)
+  {
+    SWAP(u32, result.min, result.max);
+  }
+  return result;
+}
+
+INTERNAL RangeU32 range_u32_pad(RangeU32 r, u32 x) { return range_u32(r.min-x, r.max+x); }
+INTERNAL u32 range_u32_centre(RangeU32 r) { return (r.min + r.max)/2; }
+INTERNAL b32 range_u32_contains(RangeU32 r, u32 v) { return r.min <= v && v < r.max; }
+INTERNAL u32 range_u32_dim(RangeU32 r) { return (r.max - r.min); }
+INTERNAL RangeU32 range_u32_union(RangeU32 a, RangeU32 b) { return range_u32(MIN(a.min, b.min), MAX(a.max, b.max)); }
+INTERNAL RangeU32 range_u32_intersection(RangeU32 a, RangeU32 b) { return range_u32(MAX(a.min, b.min), MIN(a.max, b.max)); }
+
+typedef union RangeU64 RangeU64;
+union RangeU64
+{
+  struct
+  {
+    u64 min, max;
+  };
+  u64 v[2];
+};
+
+INTERNAL RangeU64
+range_u64(u64 min, u64 max)
+{
+  RangeU64 result = {min, max};
+  if (result.max < result.min)
+  {
+    SWAP(u64, result.min, result.max);
+  }
+  return result;
+}
+
+INTERNAL RangeU64 range_u64_pad(RangeU64 r, u64 x) { return range_u64(r.min-x, r.max+x); }
+INTERNAL u64 range_u64_centre(RangeU64 r) { return (r.min + r.max)/2; }
+INTERNAL b64 range_u64_contains(RangeU64 r, u64 v) { return r.min <= v && v < r.max; }
+INTERNAL u64 range_u64_dim(RangeU64 r) { return (r.max - r.min); }
+INTERNAL RangeU64 range_u64_union(RangeU64 a, RangeU64 b) { return range_u64(MIN(a.min, b.min), MAX(a.max, b.max)); }
+INTERNAL RangeU64 range_u64_intersection(RangeU64 a, RangeU64 b) { return range_u64(MAX(a.min, b.min), MIN(a.max, b.max)); }
+
+IGNORE_WARNING_PEDANTIC()
 typedef union RectF32 RectF32;
 union RectF32
 {
@@ -703,13 +760,11 @@ rect_f32_shift(RectF32 r, Vec2F32 v)
   return r; 
 }
 
-// TODO(Ryan): Alter for rect
-#if 0
 INTERNAL RectF32 
 rect_f32_pad(RectF32 r, f32 x) 
 { 
-  Vec2F32 min = vec2_f32_sub(r.min, vec2_f32(x, x));
-  Vec2F32 max = vec2_f32_add(r.max, vec2_f32(x, x));
+  Vec2F32 min = vec2_f32_sub(r.pos, vec2_f32(x, x));
+  Vec2F32 max = vec2_f32_add(vec2_f32_add(r.pos, r.size), vec2_f32(x, x));
 
   return rect_f32(min, max); 
 }
@@ -717,13 +772,11 @@ rect_f32_pad(RectF32 r, f32 x)
 INTERNAL Vec2F32 
 rect_f32_centre(RectF32 r) 
 { 
-  return vec2_f32((r.min.x + r.max.x)/2, (r.min.y + r.max.y)/2); 
+  return vec2_f32((r.pos.x + r.size.x) * 0.5f, (r.pos.y + r.size.y) * 0.5f); 
 }
-
 
 INTERNAL Vec2F32 
 rect_f32_dim(RectF32 r) 
 { 
-  return vec2_f32(f32_abs(r.max.x - r.min.x), f32_abs(r.max.y - r.min.y)); 
+  return vec2_f32(r.size.x, r.size.y); 
 }
-#endif

@@ -5,6 +5,93 @@
 
 #include "base-inc.h"
 
+typedef struct BencodeNode BencodeNode;
+struct BencodeNode
+{
+  String8 value;
+  BencodeNode *first;
+  BencodeNode *next;
+};
+
+typedef enum
+{
+  TOKEN_TYPE_NULL = 0,
+  TOKEN_TYPE_ERROR, 
+
+} TOKEN_TYPE;
+
+typedef struct Token Token;
+struct Token
+{
+  TOKEN_TYPE type;
+  RangeU64 range;
+};
+
+typedef struct TokenNode TokenNode;
+struct TokenNode
+{
+  Token token;
+  TokenNode *next;
+};
+
+typedef struct TokenList TokenList;
+struct TokenList
+{
+  TokenNode *first, *last;
+  u64 count;
+};
+
+INTERNAL TokenList
+get_token_list(String8 str)
+{
+  TokenList result = ZERO_STRUCT;
+
+  return result;
+}
+
+#if 0
+INTERNAL Node *
+parse_list_token()
+{
+  Node *first, *last;
+  while (parsing)
+  {
+    advance_token(token);
+    
+    Node *child = parse_token(token);
+    if (child != NULL) SLL_QUEUE_PUSH(first, last, child);
+
+    if (token->type == ENDER) break;
+  }
+}
+
+INTERNAL Node *
+parse_token(token)
+{
+  if (token->type == LIST_START)
+  {
+    first_child = parse_list_token();
+  }
+  else if (token->type == DICTIONARY)
+  {
+    first_child = parse_dictionary_token();
+  }
+  else if (token->type == INTEGER)
+  {
+    node->integer_val = ;
+  }
+  else if (token->type == STRING)
+  {
+
+  }
+  else
+  {
+
+  }
+
+}
+#endif
+
 INTERNAL String8
 decode_bencode(String8 bencode_str)
 {

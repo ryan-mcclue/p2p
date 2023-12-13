@@ -12,7 +12,7 @@ extern "C" {
 }
 
 void
-test_string(void **state)
+test_byte_string(void **state)
 {
   String8 decoded = decode_bencode(str8_lit("4:ryan"));
   assert_int_equal(decoded.size, 4);
@@ -23,11 +23,24 @@ test_string(void **state)
   assert_memory_equal((u8 *)decoded.content, "ry", decoded.size);
 }
 
+void
+test_integer(void **state)
+{
+  String8 decoded = decode_bencode(str8_lit("i10e"));
+  assert_int_equal(decoded.size, 2);
+  assert_memory_equal((u8 *)decoded.content, "10", decoded.size);
+
+  decoded = decode_bencode(str8_lit("i-122e"));
+  assert_int_equal(decoded.size, 4);
+  assert_memory_equal((u8 *)decoded.content, "-122", decoded.size);
+}
+
 int 
 main(void)
 {
 	const struct CMUnitTest tests[] = {
-    cmocka_unit_test(test_string),
+    cmocka_unit_test(test_byte_string),
+    cmocka_unit_test(test_integer),
   };
 
   int cmocka_res = cmocka_run_group_tests(tests, NULL, NULL);
