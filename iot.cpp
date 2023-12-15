@@ -45,7 +45,6 @@ consume_bencode_integer(MemArena *arena, String8 *str)
 
     String8 integer_str = str8_substring(*str, 1, at);
     node->integer_value = str8_to_int(integer_str);
-    at++;
 
     str->content += at;
     str->size -= at;
@@ -84,7 +83,6 @@ consume_bencode_string(MemArena *arena, String8 *str)
     node->type = NODE_TYPE_STRING; 
 
     node->string_value = str8_substring(*str, node_start, at);
-    //at++;
 
     str->content += at;
     str->size -= at;
@@ -141,6 +139,8 @@ consume_bencode_element(MemArena *arena, String8 *str)
   }
   else if (ch == 'd')
   {
+    first = consume_bencode_list(arena, str);
+    compound_node_type = NODE_TYPE_DICTIONARY;
   }
   else
   {
@@ -155,6 +155,43 @@ consume_bencode_element(MemArena *arena, String8 *str)
   }
 
   return result;
+}
+
+// ecc (ellipitcal curve cryptography)
+// linux fnmatch() for glob pattern checking?
+// linux kernel crypto API:
+//   * rng
+//   * message digest same as hash (md5)
+//     keyed message digest uses hash and key (HMAC)
+//   * checksums aren't cryptographic
+//   * cipher is umbrella term for encryption, e.g. symmetric(AES)/asymmetric(RSA)
+INTERNAL void
+explore(void)
+{
+#if 0
+static int create_alg(const char *alg)
+{
+	struct sockaddr_alg salg;
+	int sk;
+
+	sk = socket(PF_ALG, SOCK_SEQPACKET | SOCK_CLOEXEC, 0);
+	if (sk < 0)
+		return -1;
+
+	memset(&salg, 0, sizeof(salg));
+	salg.salg_family = AF_ALG;
+	strcpy((char *) salg.salg_type, "hash");
+	strcpy((char *) salg.salg_name, alg);
+
+	if (bind(sk, (struct sockaddr *) &salg, sizeof(salg)) < 0) {
+		close(sk);
+		return -1;
+	}
+
+	return sk;
+}
+#endif
+
 }
 
 #if defined(TEST_BUILD)
@@ -184,8 +221,37 @@ int main(int argc, char *argv[])
     str8_list_push(perm_arena, &args_list, str8_cstr(argv[i]));
   }
 
-  String8 str = str8_lit("l4:ryan3:loce");
+  String8 str = str8_lit("l4:ryani-32ee");
   BencodeNode *node = consume_bencode_element(perm_arena, &str);
+
+  // git show HEAD^:iot.cpp >> iot-old.cpp
+  
+  // sha1 more bits than md5, so more complex?
+  // really sha1 fine over more secure sha256 as 1 in 9quintillion
+  // meow hash probably better for large data
+
+  // central tracker server stores peers
+
+  // RPC is a broad concept. REST would be an implementation of RPC
+  
+  // nodes are distributed servers
+  //  {src, dest, body}
+  // clients interact with nodes via an RPC
+  //  {type, id, in_reply_to, ...}
+
+  // with networking in a 'moderated' environment, don't really have to go through effort of security
+  // start simple with TCP and non-binary packing
+  //
+  // server: 1. inform all players of state when they connect:
+  //              * assign authority to new player object 
+  //         2. inform all players of updates to state
+  //
+  // handle_incoming_messages();
+  // render_frame();
+  // server_broadcast_updated_entities();
+  // client_send_updated_authority_entities(); 
+
+  explore();
 
   profiler_end_and_print();
 
