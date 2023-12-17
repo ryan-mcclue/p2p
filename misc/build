@@ -1,6 +1,8 @@
 #!/bin/bash
 set -ue
 
+# idf.py build && idf.py -p /dev/ttyUSB0 flash
+
 error() { printf "Error: %s\n" "$1" >&2 && exit 1; }
 push_dir() { command pushd "$@" > /dev/null; }
 pop_dir() { command popd "$@" > /dev/null; }
