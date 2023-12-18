@@ -1,0 +1,90 @@
+JTAG (Joint Test Action Group) hardware interface to connect chips to testing hardware
+Testing method in standard is known as a boundary scan
+
+TAP (Test Access Port) is on supported chip that is controlled with TMS signal.
+Contains IR and DR registers. Will process JTAG instructions
+TDI, TDO, TCK, TMS, TRST (optional)
+
+TMS (IO14)
+TDI (IO12)
+TCK (IO13)
+TDO (IO15)
+EN/RST (enable/reset) signal will trigger a hard reset
+asserting BOOT button will trigger DTR/RTS RS-232 signal to put board in download mode after reset
+due to improper FTDI serial driver while holding BOOT button press EN and flash
+
+dmesg | grep /dev/ttyUSB0
+lsof
+
+jtag flashing faster than uart as parallel
+
+openocd -f board/esp32-wrover-kit-3.3v.cfg
+
+openocd -f board/esp32-wrover-kit-3.3v.cfg -c "program_esp build/hello_world.bin 0x10000 verify reset exit"
+
+menuconfig vast; e.g. setting clock speed, flash size
+idf.py fullclean
+version.txt:
+0.0.1
+partitions.csv: (start from default partitions table)
+storage, data, spiffs, 0x11000, 0x100000, 
+main/CMakeLists.txt:
+spiffs_create_partition_image(storage folder-we-want FLASH_IN_PROJECT)
+
+esp_vfs_spiffs_conf_t config = {
+  .base_path = "/storage",
+  .partition_label = NULL,
+  .max_files = 5,
+  .format_if_mount_failed = true
+}
+
+if (result != ESP_OK)
+{
+  ESP_LOGE(tag, "failed: %s", esp_err_to_name(result));
+}
+esp_spiffs_info(config.partition_label, &total, &used)
+FILE *f = fopen("/storage/myfile.txt", "r");
+printf();
+
+
+
+#include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+esp-idf/components/driver/gpio.c
+
+void app_main(void)
+{
+  while (1)
+  {
+    ...
+    vTaskDelay(10);
+  }
+}
+
+
+Flash Layout:
+bootloader
+partition table
+nvs (encrypted storage of passwords, ssid, etc.)
+phy_init (rf calibration data)
+app
+custom storage partition
+
+Filesystems:
+  * FAT simple
+  * littleFS
+    want journalling as file corruption likely: littleFS
+
+wear-leveling enough, i.e. distribute writes/erases across memory blocks
+filesystem for when storing many irregular sized things like images, audio, database
+if storing known sizes, better to use circular buffer:
+ - not optimal wear leveling across many sectors
+ - no bad block detection, i.e. periodically check for integrity of sections of memory
+ - write verification/ECC (error correction code) (memory more susceptible as more exposed?)
+ - no power-loss protection; i.e. copy-on-write will copy value and only if successful point new data to it
+
+internal flash on stm32 faster than SPI limited esp32 external flash
+
+TODO: Yuri R. linkedin. australia embedded
+vscode 'actionable buttons' plugin (settings.json)
