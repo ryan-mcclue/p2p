@@ -22,7 +22,7 @@ openocd -f board/esp32-wrover-kit-3.3v.cfg
 
 openocd -f board/esp32-wrover-kit-3.3v.cfg -c "program_esp build/hello_world.bin 0x10000 verify reset exit"
 
-menuconfig vast; e.g. setting clock speed, flash size
+menuconfig vast; e.g. setting clock speed, flash size, connection configuration
 idf.py fullclean
 version.txt:
 0.0.1
@@ -47,6 +47,10 @@ FILE *f = fopen("/storage/myfile.txt", "r");
 printf();
 
 
+Wifi:
+After esp-specific setup, can use: socket() (i.e. get some POSIX headers)
+
+
 
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
@@ -58,7 +62,7 @@ void app_main(void)
   while (1)
   {
     ...
-    vTaskDelay(10);
+    vTaskDelay(10); // vTaskDelay(pdMS_TO_TICKS(100));
   }
 }
 
@@ -88,3 +92,14 @@ internal flash on stm32 faster than SPI limited esp32 external flash
 
 TODO: Yuri R. linkedin. australia embedded
 vscode 'actionable buttons' plugin (settings.json)
+
+
+EXTRA_COMPONENTS_DIR protocol_examples_common
+
+
+sleep on and connect and send data; then sleep again
+  esp_sleep_enable_timer_wakeup(random_sleep);
+      esp_light_sleep_start();
+
+https://github.com/andraz213/UrbanNoiseSensing
+The exact specific model is WROOM 32U because it has an external antenna connector. PCB antennas tend to be spotty and have a lot of signal shape peculiarities that are less than ideal in this kind of application. The bad thing about this is that all of the development boards have a very inefficient LDO AMS1117. It is a voltage regulator with a high quiescent current. It consumes 5mA of power at all times. That is unacceptable. I will have to replace those with a more efficient model like MCP1825S. It has a quiescent current of only 220uA, which is far from the lowest, but it's good enough for this application.
