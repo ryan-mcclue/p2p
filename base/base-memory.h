@@ -58,13 +58,6 @@ mem_arena_allocate(memory_index cap, memory_index roundup_granularity)
   return result;
 }
 
-INTERNAL MemArena *
-mem_arena_allocate_default(void)
-{
-  // TODO(Ryan): Make more informed choice based on system specs.
-  return mem_arena_allocate(GB(8), MB(64));
-}
-
 INTERNAL void
 mem_arena_deallocate(MemArena *arena)
 {
@@ -157,12 +150,12 @@ struct ThreadContext
 THREAD_LOCAL ThreadContext *tl_tctx = NULL;
 
 INTERNAL ThreadContext
-thread_context_allocate(void)
+thread_context_allocate(memory_index cap, memory_index roundup_granularity)
 {
   ThreadContext tctx = ZERO_STRUCT;
   for (u32 arena_idx = 0; arena_idx < ARRAY_COUNT(tctx.arenas); arena_idx += 1)
   {
-    tctx.arenas[arena_idx] = mem_arena_allocate_default();
+    tctx.arenas[arena_idx] = mem_arena_allocate(cap, roundup_granularity);
   }
   return tctx;
 }

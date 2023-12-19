@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #pragma once
 
+
 // NOTE(Ryan): GCC
 #if defined(__GNUC__)
   #define COMPILER_GCC 1
@@ -22,6 +23,8 @@
         #define ARCH_ARM7A 1
       #endif
     #endif
+  #elif defined(__XTENSA__)
+    #define ARCH_XTENSA 1
   #else
     #error Arch not supported
   #endif
@@ -32,6 +35,8 @@
   #elif defined(ARCH_ARM)
     #define PLATFORM_ARM_EABI 1
     // TODO(Ryan): Are there cortex specific defines?
+  #elif defined(ESP_PLATFORM) && (ESP_PLATFORM == 1)
+    #define PLATFORM_ESP32 1
   #else
     #error Platform not supported
   #endif
@@ -43,6 +48,8 @@
       #define CPP_VERSION 98
     #elif __cplusplus <= 201103L
       #define CPP_VERSION 11
+    #else
+      #define CPP_VERSION 0
     #endif
   #else
     #define LANG_C 1
@@ -50,6 +57,8 @@
       #define C_VERSION 99
     #elif __STDC_VERSION__ <= 201112L
       #define C_VERSION 11
+    #else
+      #define C_VERSION 0
     #endif
   #endif
   
@@ -132,3 +141,41 @@
 #else
   #error Compiler not supported
 #endif
+
+#include <stdio.h>
+static void
+print_context(void)
+{
+  printf("Base Context Detected:\n");
+
+#if defined(ARCH_X86_64)
+  printf(" - Arch: x86_64\n");
+#elif defined(ARCH_ARM64)
+  printf(" - Arch: arm64\n");
+#elif defined(ARCH_ARM32)
+  printf(" - Arch: arm32\n");
+#elif defined(ARCH_XTENSA)
+  printf(" - Arch: xtensa\n");
+#endif
+
+#if defined(PLATFORM_LINUX)
+  printf(" - Platform: linux\n");
+#elif defined(PLATFORM_ARM_EABI)
+  printf(" - Platform: arm-eabi\n");
+#elif defined(PLATFORM_ESP32)
+  printf(" - Platform: esp32\n");
+#endif
+
+#if defined(COMPILER_GCC)
+  printf(" - Compiler: gcc (%d.%d.%d)\n", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+ #if defined(IDF_VER)
+    printf("   ESP-IDF (%d.%d.%d)\n", IDF_VER_MAJOR, IDF_VER_MINOR, IDF_VER_PATCH);
+ #endif
+#endif
+
+#if defined(LANG_CPP)
+  printf(" - C++ version: %d\n", CPP_VERSION);
+#elif defined(LANG_C)
+  printf(" - C version: %d\n", C_VERSION);
+#endif
+}
