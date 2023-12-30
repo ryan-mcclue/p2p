@@ -28,6 +28,63 @@ struct BencodeNode
   BencodeNode *next;
 };
 
+GLOBAL BencodeNode nil_bencode_node =
+{
+  .type = NODE_TYPE_NULL,
+  .integer_value = 0,
+  .first = &nil_bencode_node,
+  .next = &nil_bencode_node
+};
+
+INTERNAL BencodeNode *
+bencode_nil_node(void)
+{
+  return &nil_bencode_node;
+}
+
+INTERNAL b32
+is_bencode_nil_node(BencodeNode *node)
+{
+  return (node == NULL || node == &nil_bencode_node || node->type == NOTE_TYPE_NULL);
+}
+
+// WANT TO MINIMISE CODEPATHS!
+
+//     MD_ParseResult result = MD_ZERO_STRUCT;
+//     result.node = MD_NilNode();
+//     return result;
+// ZII:
+//   - have all codepaths be able to operate on 0 input
+//   - often code can work with 'empty' values instead of explicit validity checking
+//   - nil nodes if wanting to read null; so not always required if say just iterating through a list 
+//     return nil nodes and operate on in linked list traversal?
+// reading a null pointer:
+//   - return a nil struct so reading guaranteed
+
+// literal invalid cases like failed allocation, i.e. operation can not possibly proceed
+//   - fail early into callstack!
+
+// 1. error information available in addition to, rather than instead of
+//    in affect, 'side-channel' of information much more powerful
+//    the message can contain information about what code set it and when, e.g. callstack, colour etc.
+// 2. don't needlessly validite results
+// error information in-addition to returned type, so usage code can inspect errors if it wants to
+// error handling is code running smoothly in the presence of errors, with logs accumulated later if need be
+// so, error (more like message) when want to know why it occurred
+//   struct Result {
+//     nodes answer;
+//     error_list errors;
+//   };
+//   Result res = parse();
+//   for (err in errors);
+// if (errors->max_error_type == error_type_null);
+// if (errors->max_error_type > error_type_null);
+
+// fewer types means fewer codepaths
+
+
+
+
 INTERNAL BencodeNode *
 consume_bencode_integer(MemArena *arena, String8 *str)
 {

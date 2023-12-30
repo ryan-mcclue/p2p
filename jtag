@@ -56,6 +56,11 @@ sleep on and connect and send data; then sleep again
       esp_light_sleep_start();
 
 
+qemu esp-idf:
+https://www.youtube.com/watch?v=lZp9L7Ij4Yo
+
+https://learnesp32.com/
+
 static server:
 https://github.com/JoshMarangoni/rc_robot/blob/main/firmware/main_esp_idf/main/main_esp_idf.c
 https://github.com/JoshMarangoni/esp32-sockets/blob/main/main/tcp-client.c
