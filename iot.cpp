@@ -82,6 +82,13 @@ is_bencode_nil_node(BencodeNode *node)
 
 // fewer types means fewer codepaths
 
+// IMPORTANT: code only works if run through a debugger and tested etc.
+// however, as the number of all possible codepaths is huge, it's unfeasible to test all
+// so, aim to reduce 'effective' codepaths
+//
+// want return value to have concrete guarantees, i.e. not a 'sum' type (so go against discriminated union)
+// stateful code is where input and output same, i.e. pointer. locally stateful code is fine
+// stateful code requires codepaths to make assumptions, which can often be wrong
 
 
 
